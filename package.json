@@ -1,0 +1,19 @@
+{
+  "name": "visitor-badge-lite",
+  "version": "1.0.0",
+  "description": "简洁的访客统计和点赞徽章服务",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx --watch src/index.ts",
+    "start": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "geoip-lite": "^1.4.10"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.10",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.3"
+  }
+}
