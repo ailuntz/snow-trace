@@ -12,6 +12,10 @@
 [![Combined Badge](https://api.ailuntz.com/v1/ailuntz/ailuntz)](https://api.ailuntz.com/v1/like/ailuntz/ailuntz/add)
 <!-- [![Promo Button](https://api.ailuntz.com/v1/promo)](https://github.com/ailuntz/ailuntz) -->
 
+> **⚠️ 重要提示 / Important Notice**
+> GitHub 通过 Camo 代理缓存徽章图片，**可能有 5-15 分钟的显示延迟**。直接访问 API 或本地查看 README 可看到实时数据。
+> GitHub caches badge images via Camo proxy, which **may cause a 5-15 minute display delay**. Direct API access or local README viewing shows real-time data.
+
 ### 什么是组合徽章？
 
 一个完整的访客统计小部件，显示：
@@ -39,6 +43,11 @@
 **交互说明**：
 - 访问徽章 = 自动增加访问计数
 - 点击徽章 = 触发点赞操作（显示成功页面后自动返回）
+
+**⚠️ GitHub 显示延迟说明**：
+- GitHub README 中的徽章可能有 **5-15 分钟**的缓存延迟（GitHub Camo 代理缓存）
+- 直接访问 API URL 可看到实时数据：`https://api.ailuntz.com/v1/your-username/your-repo`
+- 本地查看 README 也能看到实时数据
 
 ---
 
@@ -86,9 +95,17 @@ pnpm dev
    - 所有文本均为中英双语显示
    - 时间格式：刚刚 / just now，X分钟前 / Xm ago
 
-4. **实时更新**
-   - 所有徽章设置 `no-cache` 响应头
-   - 每次访问都返回最新数据
+4. **防刷机制**
+   - 同一 IP 在 **30 秒**内只计数一次（访问和点赞）
+   - 基于 IP + namespace + key 的组合进行防刷
+   - 内存缓存，自动清理过期记录
+   - 冷却期内仍可查看徽章（只是不计数）
+
+5. **实时更新**
+   - 所有徽章设置增强的反缓存响应头（`no-cache`, `Pragma`, `ETag`, `Expires`）
+   - API 直接访问可获取最新数据
+   - ⚠️ **GitHub README 中有 5-15 分钟的缓存延迟**（GitHub Camo 代理缓存）
+   - 支持 URL 查询参数强制刷新（如 `?t=timestamp`）
 
 ### 数据存储架构
 

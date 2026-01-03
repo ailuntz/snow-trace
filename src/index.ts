@@ -3,6 +3,18 @@ import { store } from "./storage.js";
 import { renderVisitorBadge, renderLikeBadge, renderCombinedBadge, renderLikeButton, renderPromoButton } from "./utils/render.js";
 import { PORT } from "./config.js";
 
+// SVG 响应头（强制不缓存，包含时间戳以绕过 GitHub Camo 缓存）
+function getSVGHeaders() {
+  return {
+    "Content-Type": "image/svg+xml",
+    "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
+    "Pragma": "no-cache",
+    "Expires": "0",
+    "ETag": `"${Date.now()}"`,
+    "Last-Modified": new Date().toUTCString(),
+  };
+}
+
 // 获取客户端 IP 地址
 function getClientIP(req: IncomingMessage): string | undefined {
   // 尝试从 X-Forwarded-For 获取（如果使用了代理）
@@ -42,10 +54,7 @@ const server = createServer((req: IncomingMessage, res: ServerResponse) => {
       const clientIP = getClientIP(req);
       const data = store.incrementVisit(namespace, key, req.headers["user-agent"], req.headers["referer"], clientIP);
       const svg = renderVisitorBadge(data);
-      res.writeHead(200, {
-        "Content-Type": "image/svg+xml",
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-      });
+      res.writeHead(200, getSVGHeaders());
       res.end(svg);
       return;
     }
@@ -64,10 +73,7 @@ const server = createServer((req: IncomingMessage, res: ServerResponse) => {
         recentLikes: store.getRecentLikes(namespace, key)
       };
       const svg = renderCombinedBadge(visitData, likeData, namespace, key);
-      res.writeHead(200, {
-        "Content-Type": "image/svg+xml",
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-      });
+      res.writeHead(200, getSVGHeaders());
       res.end(svg);
       return;
     }
@@ -147,6 +153,20 @@ const server = createServer((req: IncomingMessage, res: ServerResponse) => {
       font-size: 14px;
       color: #999;
     }
+    .notice {
+      margin-top: 20px;
+      padding: 15px;
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #856404;
+      text-align: left;
+      line-height: 1.6;
+    }
+    .notice strong {
+      color: #f5576c;
+    }
   </style>
 </head>
 <body>
@@ -155,6 +175,11 @@ const server = createServer((req: IncomingMessage, res: ServerResponse) => {
     <h1>点赞成功！</h1>
     <p>Like Success!</p>
     <p class="redirect-text">正在跳转回原页面... · Redirecting...</p>
+    <div class="notice">
+      <strong>💡 提示 · Notice</strong><br>
+      GitHub README 中的徽章可能有 <strong>5-15 分钟</strong>的缓存延迟<br>
+      Badge on GitHub may have a <strong>5-15 min</strong> cache delay
+    </div>
   </div>
 </body>
 </html>`;
@@ -177,10 +202,7 @@ const server = createServer((req: IncomingMessage, res: ServerResponse) => {
       const count = store.getLikeCount(namespace, key);
       const recentLikes = store.getRecentLikes(namespace, key);
       const svg = renderLikeBadge({ count, recentLikes });
-      res.writeHead(200, {
-        "Content-Type": "image/svg+xml",
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-      });
+      res.writeHead(200, getSVGHeaders());
       res.end(svg);
       return;
     }
@@ -194,10 +216,7 @@ const server = createServer((req: IncomingMessage, res: ServerResponse) => {
       const key = match[2];
       const count = store.getLikeCount(namespace, key);
       const svg = renderLikeButton(namespace, key, count);
-      res.writeHead(200, {
-        "Content-Type": "image/svg+xml",
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-      });
+      res.writeHead(200, getSVGHeaders());
       res.end(svg);
       return;
     }
@@ -206,17 +225,15 @@ const server = createServer((req: IncomingMessage, res: ServerResponse) => {
   // 推广按钮: /v1/promo
   if (url === "/v1/promo" || url.startsWith("/v1/promo?")) {
     const svg = renderPromoButton();
-    res.writeHead(200, {
-      "Content-Type": "image/svg+xml",
-      "Cache-Control": "no-cache, no-store, must-revalidate",
-    });
+    res.writeHead(200, getSVGHeaders());
     res.end(svg);
     return;
   }
 
   // 通用路由: /v1/:namespace/:key (默认返回组合徽章)
   if (url.startsWith("/v1/")) {
-    const match = url.match(/^\/v1\/([^/]+)\/([^/]+)$/);
+    // 支持查询参数（如 ?t=timestamp），方便绕过缓存
+    const match = url.match(/^\/v1\/([^/]+)\/([^/?]+)/);
     if (match) {
       const namespace = match[1];
       const key = match[2];
@@ -227,10 +244,7 @@ const server = createServer((req: IncomingMessage, res: ServerResponse) => {
         recentLikes: store.getRecentLikes(namespace, key)
       };
       const svg = renderCombinedBadge(visitData, likeData, namespace, key);
-      res.writeHead(200, {
-        "Content-Type": "image/svg+xml",
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-      });
+      res.writeHead(200, getSVGHeaders());
       res.end(svg);
       return;
     }

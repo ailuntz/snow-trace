@@ -47,6 +47,13 @@ class Store {
   private counters: CounterData = {};
   private likes: LikeData = {};
 
+  // 防刷缓存：存储最后访问/点赞的时间 (IP → timestamp)
+  private visitCooldown: Map<string, number> = new Map();
+  private likeCooldown: Map<string, number> = new Map();
+
+  // 冷却时间：30秒（30000毫秒）
+  private readonly COOLDOWN_MS = 30000;
+
   constructor() {
     // 确保目录存在
     if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -58,6 +65,9 @@ class Store {
     // 进程退出时保存
     process.once("SIGINT", () => this.cleanup());
     process.once("SIGTERM", () => this.cleanup());
+
+    // 定期清理过期的冷却记录（每5分钟清理一次）
+    setInterval(() => this.cleanupCooldown(), 5 * 60 * 1000);
   }
 
   private loadCounters() {
@@ -140,6 +150,41 @@ class Store {
     }
   }
 
+  // 清理过期的冷却记录（释放内存）
+  private cleanupCooldown() {
+    const now = Date.now();
+    const expiryTime = now - this.COOLDOWN_MS;
+
+    // 清理访问冷却
+    for (const [key, timestamp] of this.visitCooldown.entries()) {
+      if (timestamp < expiryTime) {
+        this.visitCooldown.delete(key);
+      }
+    }
+
+    // 清理点赞冷却
+    for (const [key, timestamp] of this.likeCooldown.entries()) {
+      if (timestamp < expiryTime) {
+        this.likeCooldown.delete(key);
+      }
+    }
+  }
+
+  // 检查是否在冷却期内
+  private isInCooldown(cooldownMap: Map<string, number>, key: string): boolean {
+    const lastTime = cooldownMap.get(key);
+    if (!lastTime) return false;
+
+    const now = Date.now();
+    return (now - lastTime) < this.COOLDOWN_MS;
+  }
+
+  // 生成冷却键（namespace:key:ip）
+  private getCooldownKey(namespace: string, key: string, ip?: string): string {
+    const cleanIP = ip || 'unknown';
+    return `${namespace}:${key}:${cleanIP}`;
+  }
+
   private cleanup() {
     // 保存当前数据
     this.saveCounters();
@@ -174,32 +219,44 @@ class Store {
     };
   }
 
-  // 增加访问计数
+  // 增加访问计数（带防刷机制）
   incrementVisit(namespace: string, key: string, userAgent?: string, referer?: string, ip?: string) {
     const storeKey = `${namespace}:${key}`;
-    this.counters[storeKey] = (this.counters[storeKey] || 0) + 1;
+    const cooldownKey = this.getCooldownKey(namespace, key, ip);
 
-    // 获取地理位置信息
-    const location = this.getLocationFromIP(ip);
+    // 检查是否在冷却期内
+    const inCooldown = this.isInCooldown(this.visitCooldown, cooldownKey);
 
-    // 立即保存日志到文件
-    const logEntry: LogEntry = {
-      timestamp: new Date().toISOString(),
-      namespace,
-      key,
-      count: this.counters[storeKey],
-      type: "visit",
-      userAgent,
-      referer,
-      ...location, // 包含 ip, country, region, city, timezone
-    };
-    this.saveVisitLog(logEntry);
+    // 只有不在冷却期内才增加计数
+    if (!inCooldown) {
+      this.counters[storeKey] = (this.counters[storeKey] || 0) + 1;
 
-    // 立即保存计数
-    this.saveCounters();
+      // 获取地理位置信息
+      const location = this.getLocationFromIP(ip);
 
+      // 立即保存日志到文件
+      const logEntry: LogEntry = {
+        timestamp: new Date().toISOString(),
+        namespace,
+        key,
+        count: this.counters[storeKey],
+        type: "visit",
+        userAgent,
+        referer,
+        ...location, // 包含 ip, country, region, city, timezone
+      };
+      this.saveVisitLog(logEntry);
+
+      // 立即保存计数
+      this.saveCounters();
+
+      // 更新冷却时间
+      this.visitCooldown.set(cooldownKey, Date.now());
+    }
+
+    // 无论是否计数，都返回当前数据（这样徽章仍然可以显示）
     return {
-      count: this.counters[storeKey],
+      count: this.counters[storeKey] || 0,
       recentVisits: this.getRecentVisits(namespace, key)
     };
   }
@@ -210,31 +267,43 @@ class Store {
     return this.counters[storeKey] || 0;
   }
 
-  // 增加点赞
+  // 增加点赞（带防刷机制）
   incrementLike(namespace: string, key: string, userAgent?: string, referer?: string, ip?: string): number {
     const storeKey = `${namespace}:${key}`;
-    this.likes[storeKey] = (this.likes[storeKey] || 0) + 1;
+    const cooldownKey = this.getCooldownKey(namespace, key, ip);
 
-    // 获取地理位置信息
-    const location = this.getLocationFromIP(ip);
+    // 检查是否在冷却期内
+    const inCooldown = this.isInCooldown(this.likeCooldown, cooldownKey);
 
-    // 立即保存日志到文件
-    const logEntry: LogEntry = {
-      timestamp: new Date().toISOString(),
-      namespace,
-      key,
-      count: this.likes[storeKey],
-      type: "like",
-      userAgent,
-      referer,
-      ...location, // 包含 ip, country, region, city, timezone
-    };
-    this.saveLikeLog(logEntry);
+    // 只有不在冷却期内才增加计数
+    if (!inCooldown) {
+      this.likes[storeKey] = (this.likes[storeKey] || 0) + 1;
 
-    // 立即保存点赞数
-    this.saveLikes();
+      // 获取地理位置信息
+      const location = this.getLocationFromIP(ip);
 
-    return this.likes[storeKey];
+      // 立即保存日志到文件
+      const logEntry: LogEntry = {
+        timestamp: new Date().toISOString(),
+        namespace,
+        key,
+        count: this.likes[storeKey],
+        type: "like",
+        userAgent,
+        referer,
+        ...location, // 包含 ip, country, region, city, timezone
+      };
+      this.saveLikeLog(logEntry);
+
+      // 立即保存点赞数
+      this.saveLikes();
+
+      // 更新冷却时间
+      this.likeCooldown.set(cooldownKey, Date.now());
+    }
+
+    // 无论是否计数，都返回当前数据
+    return this.likes[storeKey] || 0;
   }
 
   // 获取点赞数
@@ -270,7 +339,10 @@ class Store {
         .reverse()
         .map(log => ({
           count: log.count,
-          time: log.timestamp
+          time: log.timestamp,
+          country: log.country,
+          city: log.city,
+          ip: log.ip
         }));
     } catch (error) {
       console.error("Failed to read visit logs:", error);
@@ -305,7 +377,10 @@ class Store {
         .reverse()
         .map(log => ({
           count: log.count,
-          time: log.timestamp
+          time: log.timestamp,
+          country: log.country,
+          city: log.city,
+          ip: log.ip
         }));
     } catch (error) {
       console.error("Failed to read like logs:", error);

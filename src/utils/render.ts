@@ -5,6 +5,9 @@ import { AILUNTZ_AVATAR_URL } from "./avatar.js";
 interface VisitRecord {
   count: number;
   time: string;
+  country?: string;
+  city?: string;
+  ip?: string;
 }
 
 function formatTime(time: string): string {
@@ -29,6 +32,15 @@ function formatTime(time: string): string {
   });
 }
 
+function formatLocation(country?: string, city?: string): string {
+  if (!country && !city) return "";
+  if (country === "LOCAL") return " · LOCAL";
+  if (country && city) return ` · ${city}, ${country}`;
+  if (country) return ` · ${country}`;
+  if (city) return ` · ${city}`;
+  return "";
+}
+
 export function renderVisitorBadge(data: { count: number; recentVisits: VisitRecord[] }): string {
   const { count, recentVisits } = data;
   const recentCount = Math.min(recentVisits.length, 10);
@@ -38,8 +50,9 @@ export function renderVisitorBadge(data: { count: number; recentVisits: VisitRec
   for (let i = 0; i < recentCount; i++) {
     const visit = recentVisits[i];
     const y = 100 + i * 24;
+    const location = formatLocation(visit.country, visit.city);
     visitLines += `  <text x="20" y="${y}" font-family="Arial, sans-serif" font-size="11" fill="#666">
-    · #${visit.count} · ${formatTime(visit.time)}
+    · #${visit.count} · ${formatTime(visit.time)}${location}
   </text>\n`;
   }
 
@@ -85,6 +98,9 @@ ${visitLines}
 interface LikeRecord {
   count: number;
   time: string;
+  country?: string;
+  city?: string;
+  ip?: string;
 }
 
 export function renderCombinedBadge(visitData: { count: number; recentVisits: VisitRecord[] }, likeData: { count: number; recentLikes: LikeRecord[] }, namespace: string, key: string): string {
@@ -104,8 +120,9 @@ export function renderCombinedBadge(visitData: { count: number; recentVisits: Vi
   for (let i = 0; i < Math.min(visitData.recentVisits.length, 10); i++) {
     const visit = visitData.recentVisits[i];
     const y = 100 + i * 24;
+    const location = formatLocation(visit.country, visit.city);
     visitLines += `  <text x="20" y="${y}" font-family="Arial, sans-serif" font-size="11" fill="#666">
-    · #${visit.count} · ${formatTime(visit.time)}
+    · #${visit.count} · ${formatTime(visit.time)}${location}
   </text>\n`;
   }
 
@@ -113,8 +130,9 @@ export function renderCombinedBadge(visitData: { count: number; recentVisits: Vi
   for (let i = 0; i < Math.min(likeData.recentLikes.length, 10); i++) {
     const like = likeData.recentLikes[i];
     const y = 100 + i * 24;
+    const location = formatLocation(like.country, like.city);
     likeLines += `  <text x="410" y="${y}" font-family="Arial, sans-serif" font-size="11" fill="#666">
-    · #${like.count} · ${formatTime(like.time)}
+    · #${like.count} · ${formatTime(like.time)}${location}
   </text>\n`;
   }
 
@@ -236,8 +254,9 @@ export function renderLikeBadge(data: { count: number; recentLikes: LikeRecord[]
   for (let i = 0; i < recentCount; i++) {
     const like = recentLikes[i];
     const y = 100 + i * 24;
+    const location = formatLocation(like.country, like.city);
     likeLines += `  <text x="20" y="${y}" font-family="Arial, sans-serif" font-size="11" fill="#666">
-    · #${like.count} · ${formatTime(like.time)}
+    · #${like.count} · ${formatTime(like.time)}${location}
   </text>\n`;
   }
 
