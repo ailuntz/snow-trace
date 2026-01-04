@@ -1,133 +1,132 @@
-# Snow Trace - 访客统计徽章 / Visitor Badge
+# Snow Trace - Visitor Statistics Badge
 
-一个轻量级的访客统计服务，自动生成访问与点赞统计徽章，专为 GitHub README 设计。
+A lightweight visitor statistics service that automatically generates visit and like tracking badges, designed for GitHub READMEs.
+
+> [中文文档](./README_CN.md) | **English**
 
 ---
 
-## 📌 快速使用 / Quick Start
+## 📌 Quick Start
 
-
-### 效果展示 / Live Demo
+### Live Demo
 
 [![Combined Badge](https://api.ailuntz.com/v1/ailuntz/ailuntz)](https://api.ailuntz.com/v1/like/ailuntz/ailuntz/add)
-<!-- [![Promo Button](https://api.ailuntz.com/v1/promo)](https://github.com/ailuntz/ailuntz) -->
 
-> **⚠️ 重要提示 / Important Notice**
-> GitHub 通过 Camo 代理缓存徽章图片，**可能有 5-15 分钟的显示延迟**。直接访问 API 或本地查看 README 可看到实时数据。
+> **⚠️ Important Notice**
 > GitHub caches badge images via Camo proxy, which **may cause a 5-15 minute display delay**. Direct API access or local README viewing shows real-time data.
 
-### 什么是组合徽章？
+### What is a Combined Badge?
 
-一个完整的访客统计小部件，显示：
-- **左栏（紫色）**: 访客统计 - 总访问次数 + 最近10次访问记录 + GitHub 头像
-- **右栏（红色）**: 点赞统计 - 总点赞数 + 最近10次点赞记录 + GitHub 头像
-- **底部按钮**: 可点击的点赞按钮
+A complete visitor statistics widget that displays:
+- **Left Panel (Purple)**: Visitor stats - total visits + recent 10 visit logs + GitHub avatars
+- **Right Panel (Red)**: Like stats - total likes + recent 10 like logs + GitHub avatars
+- **Bottom Button**: Clickable like button
 
-### 在你的 GitHub README 中添加徽章
+### Add Badge to Your GitHub README
 
-只需一行 Markdown 代码：
+Just one line of Markdown:
 
 ```markdown
 [![Visitor Badge](https://api.ailuntz.com/v1/your-username/your-repo)](https://api.ailuntz.com/v1/like/your-username/your-repo/add)
 ```
 
-**示例**：
+**Example**:
 ```markdown
 [![Visitor Badge](https://api.ailuntz.com/v1/ailuntz/ailuntz)](https://api.ailuntz.com/v1/like/ailuntz/ailuntz/add)
 ```
 
-**路径参数**：
-- 第一个字段：GitHub 用户名
-- 第二个字段：项目/仓库名称
+**Path Parameters**:
+- First field: GitHub username
+- Second field: Project/repository name
 
-**交互说明**：
-- 访问徽章 = 自动增加访问计数
-- 点击徽章 = 触发点赞操作（显示成功页面后自动返回）
+**Interaction**:
+- View badge = Auto-increment visit count
+- Click badge = Trigger like action (shows success page, auto-redirects)
 
-**⚠️ GitHub 显示延迟说明**：
-- GitHub README 中的徽章可能有 **5-15 分钟**的缓存延迟（GitHub Camo 代理缓存）
-- 直接访问 API URL 可看到实时数据：`https://api.ailuntz.com/v1/your-username/your-repo`
-- 本地查看 README 也能看到实时数据
+**⚠️ GitHub Display Delay**:
+- Badges in GitHub README may have **5-15 minute** cache delay (GitHub Camo proxy)
+- Direct API URL access shows real-time data: `https://api.ailuntz.com/v1/your-username/your-repo`
+- Local README viewing also shows real-time data
 
 ---
 
-## 🛠 开发者文档 / Developer Guide
+## 🛠 Developer Guide
 
-### 本地开发
+### Local Development
 
 ```bash
-# 安装依赖
+# Install dependencies
 pnpm install
 
-# 启动开发服务器
+# Start dev server
 pnpm dev
 
-# 服务运行在 http://localhost:3000
+# Server runs at http://localhost:3000
 ```
 
-### API 端点
+### API Endpoints
 
-#### 徽章类
-- `GET /v1/:namespace/:key` - 组合徽章（推荐）
-- `GET /v1/badge/:namespace/:key` - 组合徽章（明确路径）
-- `GET /v1/visit/:namespace/:key` - 访客统计徽章
-- `GET /v1/like/:namespace/:key` - 点赞统计徽章
-- `GET /v1/button/:namespace/:key` - 独立点赞按钮
-- `GET /v1/promo` - 项目推广按钮
+#### Badge Endpoints
+- `GET /v1/:namespace/:key` - Combined badge (recommended)
+- `GET /v1/badge/:namespace/:key` - Combined badge (explicit path)
+- `GET /v1/visit/:namespace/:key` - Visitor stats badge
+- `GET /v1/like/:namespace/:key` - Like stats badge
+- `GET /v1/button/:namespace/:key` - Standalone like button
+- `GET /v1/promo` - Project promo button
 
-#### 操作类
-- `GET /v1/like/:namespace/:key/add` - 点赞操作（显示成功页面，1秒后跳回）
+#### Action Endpoints
+- `GET /v1/like/:namespace/:key/add` - Like action (shows success page, redirects after 1s)
 
-#### 系统类
-- `GET /health` - 服务健康检查
+#### System Endpoints
+- `GET /health` - Service health check
 
-### 核心特性
+### Core Features
 
-1. **动态头像**
-   - 特定用户（ailuntz）使用本地自定义头像
-   - 其他用户自动从 GitHub API 加载头像 (`https://github.com/{username}.png`)
+1. **Dynamic Avatars**
+   - Specific users (ailuntz) use local custom avatars
+   - Other users auto-load avatars from GitHub API (`https://github.com/{username}.png`)
 
-2. **地理位置追踪**
-   - 基于 IP 自动识别访客国家、地区、城市
-   - 本地 IP 显示为 "LOCAL / localhost"
+2. **Geographic Tracking**
+   - Auto-detect visitor's country, region, city based on IP
+   - Local IPs show as "LOCAL / localhost"
 
-3. **双语界面**
-   - 所有文本均为中英双语显示
-   - 时间格式：刚刚 / just now，X分钟前 / Xm ago
+3. **Bilingual Interface**
+   - All text displayed in both Chinese and English
+   - Time format: 刚刚 / just now, X分钟前 / Xm ago
 
-4. **防刷机制**
-   - 同一 IP 在 **30 秒**内只计数一次（访问和点赞）
-   - 基于 IP + namespace + key 的组合进行防刷
-   - 内存缓存，自动清理过期记录
-   - 冷却期内仍可查看徽章（只是不计数）
+4. **Anti-Spam Protection**
+   - Same IP counted only once per **30 seconds** (visits and likes)
+   - Based on IP + namespace + key combination
+   - In-memory cache with auto-cleanup of expired records
+   - Can still view badges during cooldown (just won't count)
 
-5. **实时更新**
-   - 所有徽章设置增强的反缓存响应头（`no-cache`, `Pragma`, `ETag`, `Expires`）
-   - API 直接访问可获取最新数据
-   - ⚠️ **GitHub README 中有 5-15 分钟的缓存延迟**（GitHub Camo 代理缓存）
-   - 支持 URL 查询参数强制刷新（如 `?t=timestamp`）
+5. **Real-time Updates**
+   - All badges set enhanced anti-cache response headers (`no-cache`, `Pragma`, `ETag`, `Expires`)
+   - Direct API access gets latest data
+   - ⚠️ **5-15 minute cache delay in GitHub README** (GitHub Camo proxy)
+   - Supports URL query params for force refresh (e.g., `?t=timestamp`)
 
-### 数据存储架构
+### Data Storage Architecture
 
 ```
 data/
-├── counters.json                # 访问计数（内存缓存）
-├── likes.json                   # 点赞计数（内存缓存）
-├── visits/                      # 访问日志（按用户分文件）
+├── counters.json                # Visit counts (memory cached)
+├── likes.json                   # Like counts (memory cached)
+├── visits/                      # Visit logs (per-user files)
 │   └── {namespace}/
-│       └── {key}.jsonl         # 每个项目一个 JSONL 文件
-└── likes_visits/                # 点赞日志（按用户分文件）
+│       └── {key}.jsonl         # One JSONL file per project
+└── likes_visits/                # Like logs (per-user files)
     └── {namespace}/
         └── {key}.jsonl
 ```
 
-**性能优化**：
-- 每个用户/项目独立文件存储（避免单文件过大）
-- JSONL 格式追加写入（O(1) 操作）
-- 读取仅加载单个用户文件（7ms 响应时间）
-- 支持 100,000 用户 × 1,000 条记录规模
+**Performance Optimization**:
+- Each user/project stored in independent files (avoid single large file)
+- JSONL format append-only writes (O(1) operation)
+- Only load single user file on read (7ms response time)
+- Supports 100,000 users × 1,000 records scale
 
-**日志格式** (JSONL):
+**Log Format** (JSONL):
 ```json
 {
   "timestamp": "2025-12-30T12:34:56.789Z",
@@ -142,28 +141,28 @@ data/
 }
 ```
 
-### 部署
+### Deployment
 
-**环境要求**：Node.js 20+ / Bun
+**Requirements**: Node.js 20+ / Bun
 
-**环境变量配置**：
+**Environment Variables**:
 
-创建 `.env` 文件（或设置环境变量）：
+Create `.env` file (or set environment variables):
 ```bash
 PORT=3000
-BASE_URL=https://api.ailuntz.com  # ⚠️ 修改为你的实际域名
+BASE_URL=https://api.ailuntz.com  # ⚠️ Change to your actual domain
 DATA_DIR=./data
 ```
 
-**⚠️ 重要**：`BASE_URL` 必须设置为实际的域名，否则点赞等功能链接会错误！
+**⚠️ Important**: `BASE_URL` must be set to your actual domain, otherwise like button links will be incorrect!
 
-#### 使用 Docker Hub 镜像（推荐）
+#### Using Docker Hub Image (Recommended)
 
 ```bash
-# 拉取最新镜像
+# Pull latest image
 docker pull ailuntz/snow-trace:latest
 
-# 运行容器
+# Run container
 docker run -d \
   --name snow-trace \
   -p 3000:3000 \
@@ -172,32 +171,32 @@ docker run -d \
   --restart unless-stopped \
   ailuntz/snow-trace:latest
 
-# 修复权限（如遇到 EACCES 错误）
+# Fix permissions (if encountering EACCES errors)
 sudo chown -R 1000:1000 ./data
 ```
 
-**服务器部署**：
+**Server Deployment**:
 ```bash
-# 安装依赖
+# Install dependencies
 pnpm install
 
-# 配置环境变量
+# Configure environment
 cp .env.example .env
-# 编辑 .env 修改 BASE_URL 为你的域名
+# Edit .env to set BASE_URL to your domain
 
-# 生产环境运行（使用 tsx 直接运行 TypeScript）
+# Production run (use tsx to run TypeScript directly)
 pnpm start
 ```
 
-**Docker 部署（本地构建）**：
+**Docker Deployment (Local Build)**:
 
-如果需要自行构建镜像：
+If you need to build the image yourself:
 
 ```bash
-# 1. 构建镜像
+# 1. Build image
 docker build -t snow-trace:latest .
 
-# 2. 运行容器（设置环境变量）
+# 2. Run container (set environment variables)
 docker run -d \
   --name snow-trace \
   -p 3000:3000 \
@@ -206,19 +205,19 @@ docker run -d \
   --restart unless-stopped \
   snow-trace:latest
 
-# 3. 修复权限（如遇到错误）
+# 3. Fix permissions (if needed)
 sudo chown -R 1000:1000 ./data
 
-# 4. 查看日志
+# 4. View logs
 docker logs -f snow-trace
 
-# 5. 健康检查
+# 5. Health check
 curl http://localhost:3000/health
 ```
 
-**Docker Compose 部署**（推荐）：
+**Docker Compose Deployment** (Recommended):
 
-创建 `docker-compose.yml`：
+Create `docker-compose.yml`:
 ```yaml
 services:
   snow-trace:
@@ -227,6 +226,8 @@ services:
     container_name: snow-trace
     ports:
       - "3000:3000"
+    environment:
+      - BASE_URL=https://api.your-domain.com
     volumes:
       - ./data:/app/data
     restart: unless-stopped
@@ -238,169 +239,169 @@ services:
       start_period: 5s
 ```
 
-运行：
+Run:
 ```bash
 docker-compose up -d
 ```
 
-**Dockerfile 特性**：
-- ✅ 多架构支持（AMD64 + ARM64）
-- ✅ 使用 tsx 直接运行 TypeScript（无需编译）
-- ✅ 基于 Alpine Linux（镜像更小）
-- ✅ 使用非 root 用户运行（node, UID 1000）
-- ✅ 环境变量配置支持
-- ✅ 内置健康检查
+**Dockerfile Features**:
+- ✅ Multi-architecture support (AMD64 + ARM64)
+- ✅ Use tsx to run TypeScript directly (no compilation needed)
+- ✅ Based on Alpine Linux (smaller image)
+- ✅ Run as non-root user (node, UID 1000)
+- ✅ Environment variable configuration support
+- ✅ Built-in health check
 
-**数据持久化**：
-- 数据目录 `/app/data` 必须挂载到宿主机
-- 容器以 UID 1000 运行，需确保挂载目录权限正确（见故障排查）
-- 定期备份 `data/` 目录以防数据丢失
+**Data Persistence**:
+- Data directory `/app/data` must be mounted to host
+- Container runs as UID 1000, ensure mounted directory has correct permissions (see Troubleshooting)
+- Regularly backup `data/` directory to prevent data loss
 
-### 徽章规格
+### Badge Specifications
 
-**组合徽章**：
-- 尺寸：780×440px（左右各380px + 10px间隔 + 70px底部按钮）
-- 左栏：紫色渐变 (#667eea → #764ba2)
-- 右栏：红色渐变 (#f093fb → #f5576c)
-- 圆形头像：40×40px
+**Combined Badge**:
+- Size: 780×440px (left/right 380px each + 10px gap + 70px bottom button)
+- Left panel: Purple gradient (#667eea → #764ba2)
+- Right panel: Red gradient (#f093fb → #f5576c)
+- Circular avatars: 40×40px
 
-**点赞按钮**：
-- 尺寸：780×70px
-- 渐变背景：粉色 → 红色
+**Like Button**:
+- Size: 780×70px
+- Gradient background: Pink → Red
 
-**推广按钮**：
-- 尺寸：780×60px
-- 渐变背景：紫色 → 深紫色
+**Promo Button**:
+- Size: 780×60px
+- Gradient background: Purple → Deep Purple
 
-### 技术栈
+### Tech Stack
 
-- **运行时**: Node.js 20+ / Bun
-- **语言**: TypeScript
-- **依赖**:
-  - `geoip-lite` - IP 地理位置查询
-  - `node:fs` - 文件系统操作
-  - `node:http` - HTTP 服务器
+- **Runtime**: Node.js 20+ / Bun
+- **Language**: TypeScript
+- **Dependencies**:
+  - `geoip-lite` - IP geolocation lookup
+  - `node:fs` - File system operations
+  - `node:http` - HTTP server
 
-### 数据备份
+### Data Backup
 
-**重要**：定期备份 `data/` 目录以防数据丢失。
+**Important**: Regularly backup the `data/` directory to prevent data loss.
 
-**备份内容**：
+**Backup Contents**:
 ```
 data/
-├── counters.json       # 访问计数（关键）
-├── likes.json          # 点赞计数（关键）
-├── visits/             # 访问日志（JSONL 格式）
-└── likes_visits/       # 点赞日志（JSONL 格式）
+├── counters.json       # Visit counts (critical)
+├── likes.json          # Like counts (critical)
+├── visits/             # Visit logs (JSONL format)
+└── likes_visits/       # Like logs (JSONL format)
 ```
 
-**本地备份脚本**：
+**Local Backup Script**:
 ```bash
-# 创建带时间戳的备份
+# Create timestamped backup
 BACKUP_DIR="backup/snow-trace-$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$BACKUP_DIR"
 cp -r data "$BACKUP_DIR/"
-echo "备份完成: $BACKUP_DIR"
+echo "Backup completed: $BACKUP_DIR"
 
-# 或使用 tar 压缩备份
+# Or use tar for compressed backup
 tar -czf "snow-trace-backup-$(date +%Y%m%d).tar.gz" data/
 ```
 
-**Docker 环境备份**：
+**Docker Environment Backup**:
 ```bash
-# 备份容器中的数据
+# Backup data from container
 docker cp snow-trace:/app/data ./backup-data
 
-# 或直接备份挂载的 volume
+# Or directly backup mounted volume
 cp -r ./data ./backup-data-$(date +%Y%m%d)
 ```
 
-**恢复数据**：
+**Restore Data**:
 ```bash
-# 停止服务
-docker-compose down  # 或 kill 进程
+# Stop service
+docker-compose down  # or kill process
 
-# 恢复数据
+# Restore data
 cp -r backup-data/* data/
 
-# 重启服务
-docker-compose up -d  # 或 pnpm start
+# Restart service
+docker-compose up -d  # or pnpm start
 ```
 
-**建议**：
-- 每天自动备份一次
-- 保留最近 7-30 天的备份
-- 重要数据可以备份到云存储（如 S3、OSS）
+**Recommendations**:
+- Automate daily backups
+- Keep last 7-30 days of backups
+- Backup critical data to cloud storage (e.g., S3, OSS)
 
 ---
 
-## 🔍 故障排查 / Troubleshooting
+## 🔍 Troubleshooting
 
-### 问题 1: 容器启动后无法写入数据
+### Issue 1: Container Cannot Write Data After Startup
 
-**症状**：
+**Symptoms**:
 ```
 Failed to save visit log: Error: EACCES: permission denied, mkdir '/app/data/visits/...'
 Failed to save counters: Error: EACCES: permission denied, open '/app/data/counters.json.tmp'
 ```
 
-**原因**：容器以 `node` 用户（UID 1000）运行，主机目录权限不匹配
+**Cause**: Container runs as `node` user (UID 1000), host directory permissions don't match
 
-**解决方案**：
+**Solution**:
 ```bash
-# 方法 1: 修改目录所有者（推荐）
+# Method 1: Change directory owner (recommended)
 sudo chown -R 1000:1000 ./data
 
-# 方法 2: 设置宽松权限（仅开发环境）
+# Method 2: Set permissive permissions (dev only)
 sudo chmod -R 777 ./data
 ```
 
-### 问题 2: 点赞按钮链接错误
+### Issue 2: Like Button Link Incorrect
 
-**症状**：点击徽章后跳转到 localhost 或错误的域名
+**Symptoms**: Clicking badge redirects to localhost or wrong domain
 
-**原因**：未正确设置 `BASE_URL` 环境变量
+**Cause**: `BASE_URL` environment variable not set correctly
 
-**解决方案**：
+**Solution**:
 ```bash
-# Docker Run 方式
+# Docker Run method
 docker run ... -e BASE_URL=https://api.your-domain.com ...
 
-# Docker Compose 方式
-# 在 docker-compose.yml 的 environment 部分添加
+# Docker Compose method
+# Add to environment section in docker-compose.yml
 environment:
   - BASE_URL=https://api.your-domain.com
 ```
 
-### 问题 3: 徽章无法加载 GitHub 头像
+### Issue 3: Badge Cannot Load GitHub Avatars
 
-**症状**：徽章显示但头像位置为空
+**Symptoms**: Badge displays but avatar position is empty
 
-**原因**：GitHub API 限流或网络问题
+**Cause**: GitHub API rate limiting or network issues
 
-**解决方案**：
-- GitHub 头像使用 `https://github.com/{username}.png`
-- 检查服务器是否能访问 GitHub
-- 特定用户可以在 `src/utils/render.ts` 中配置本地头像
+**Solution**:
+- GitHub avatars use `https://github.com/{username}.png`
+- Check if server can access GitHub
+- Specific users can configure local avatars in `src/utils/render.ts`
 
-### 问题 4: 数据目录为空
+### Issue 4: Data Directory is Empty
 
-**症状**：访问徽章后 data 目录没有生成文件
+**Symptoms**: No files generated in data directory after accessing badge
 
-**原因**：
-1. 权限问题（见问题 1）
-2. 未正确挂载数据目录
-3. BASE_URL 配置错误导致访问了错误的端点
+**Cause**:
+1. Permission issues (see Issue 1)
+2. Data directory not mounted correctly
+3. BASE_URL misconfiguration causing wrong endpoint access
 
-**解决方案**：
+**Solution**:
 ```bash
-# 检查容器日志
+# Check container logs
 docker logs snow-trace
 
-# 检查挂载
+# Check mounts
 docker inspect snow-trace | grep -A 5 Mounts
 
-# 测试访问
+# Test access
 curl http://localhost:3000/v1/test/demo
 ```
 
@@ -408,4 +409,35 @@ curl http://localhost:3000/v1/test/demo
 
 ## 📄 License
 
-MIT License - 自由使用，保留署名
+MIT License - Free to use, attribution required
+
+---
+
+## 🌟 Features
+
+- 🎨 Beautiful gradient badges with real-time statistics
+- 🌍 Geographic tracking with IP-based location detection
+- 🛡️ Built-in anti-spam protection (30-second cooldown)
+- 📊 Scalable JSONL-based storage architecture
+- 🐳 Docker support with multi-architecture images
+- 🌐 Bilingual interface (English/Chinese)
+- ⚡ Fast response times (7ms average)
+- 🔒 Non-root container execution for security
+- 📈 Supports 100K+ users with 1K+ records each
+
+---
+
+## 🤝 Contributing
+
+Contributions welcome! Please feel free to submit a Pull Request.
+
+## 📮 Support
+
+If you encounter any issues or have questions:
+- Open an issue on GitHub
+- Check the troubleshooting section above
+- Review the Docker logs: `docker logs snow-trace`
+
+---
+
+**Made with ❤️ by ailuntz**
